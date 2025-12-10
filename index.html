@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tienda Nutrición Saludable</title>
+<style>
+/* --- Base CSS --- */
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+body{background:linear-gradient(to right,#a8edea,#fed6e3);color:#333;transition:background 0.5s,color 0.5s;}
+header{background-color:rgba(0,128,0,0.9);color:white;padding:30px 0;text-align:center;font-size:2.5em;font-weight:bold;text-shadow:2px 2px 5px rgba(0,0,0,0.3);}
+nav{display:flex;justify-content:center;background-color:rgba(0,128,0,0.8);flex-wrap:wrap;gap:5px;padding:5px 0;}
+nav a{color:white;padding:12px 20px;text-decoration:none;font-weight:bold;transition:all 0.3s;border-radius:5px;position:relative;}
+nav a::after{content:"";position:absolute;width:0;height:2px;left:50%;bottom:0;background:white;transition:all 0.3s;transform:translateX(-50%);}
+nav a:hover{background-color:rgba(255,255,255,0.2);}
+nav a:hover::after{width:80%;}
+nav button{background:none;border:none;color:white;font-size:1.2em;cursor:pointer;transition:transform 0.3s;}
+nav button:hover{transform:rotate(20deg);}
+
+section{padding:60px 20px;max-width:1200px;margin:auto;}
+h2{text-align:center;margin-bottom:40px;color:#006400;}
+.products{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;}
+.product-card{background-color:white;border-radius:15px;box-shadow:0 10px 20px rgba(0,0,0,0.2);padding:20px;width:250px;text-align:center;transition:transform 0.5s,box-shadow 0.5s;position:relative;}
+.product-card:hover{transform:rotateX(5deg) translateY(-10px);box-shadow:0 15px 30px rgba(0,0,0,0.3);}
+.product-card img{width:120px;margin-bottom:15px;transition:transform 0.5s;}
+.product-card:hover img{transform:scale(1.1) rotate(-5deg);}
+.product-card h3{margin-bottom:10px;color:#006400;}
+.product-card p{margin-bottom:15px;}
+.price{font-weight:bold;font-size:1.2em;color:#e63946;margin-bottom:15px;}
+.buy-btn{background-color:#008000;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;transition:background 0.3s;position:relative;overflow:hidden;}
+.buy-btn:hover{background-color:#006400;}
+.buy-btn.added::after{content:'✔';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#bada55;font-weight:bold;animation:pop 0.8s ease forwards;}
+@keyframes pop{0%{opacity:0;transform:translateY(-50%) scale(0);}50%{opacity:1;transform:translateY(-50%) scale(1.5);}100%{opacity:0;transform:translateY(-50%) scale(1);}}
+footer{text-align:center;padding:20px;background-color:rgba(0,128,0,0.9);color:white;margin-top:40px;}
+@media(max-width:768px){.products{flex-direction:column;align-items:center;}}
+
+/* --- Carrito mejorado --- */
+#cart-icon{position:fixed;top:50%;right:0;background-color:#008000;color:white;padding:12px 15px;border-radius:8px 0 0 8px;cursor:pointer;box-shadow:0 0 10px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;font-weight:bold;user-select:none;z-index:1000;transition:background-color 0.3s;}
+#cart-icon:hover{background-color:#006400;}
+#cart-icon svg{width:24px;height:24px;fill:white;}
+#cart-count{background:#e63946;border-radius:50%;padding:2px 7px;font-size:0.9em;min-width:20px;text-align:center;display:none;transform:scale(1);transition:transform 0.3s;}
+#cart-panel{position:fixed;top:0;right:-400px;width:350px;height:100%;background:white;box-shadow:-5px 0 30px rgba(0,0,0,0.5);overflow-y:auto;padding:20px;display:flex;flex-direction:column;transition:right 0.5s;z-index:999;}
+#cart-panel.show{right:0;}
+#cart-panel h3{text-align:center;color:#006400;font-weight:700;margin-bottom:15px;}
+.cart-item{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:0.95em;border-bottom:1px solid #ddd;padding-bottom:6px;gap:8px;}
+.cart-item img{width:40px;height:40px;object-fit:contain;border-radius:6px;border:1px solid #ccc;}
+.cart-item-info{flex-grow:1;display:flex;flex-direction:column;}
+.cart-item-name{font-weight:bold;color:#006400;}
+.cart-item-controls{display:flex;align-items:center;gap:6px;}
+.cart-item-controls button{background:#e63946;border:none;color:white;border-radius:5px;cursor:pointer;font-weight:bold;padding:0 8px;font-size:1em;line-height:1;user-select:none;width:26px;height:26px;display:flex;justify-content:center;align-items:center;transition:background 0.3s;}
+.cart-item-controls button:hover{background:#b32e3e;}
+#cart-total{text-align:right;font-weight:700;margin-top:10px;font-size:1.2em;color:#e63946;transition:transform 0.3s;}
+#empty-cart-btn{margin-top:10px;background:#006400;color:white;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:bold;transition:background 0.3s;}
+#empty-cart-btn:hover{background:#004d00;}
+
+/* --- Efecto modo noche --- */
+body.night{background:#1a1a1a;color:#ddd;}
+body.night nav{background:#003300;}
+body.night footer{background:#003300;}
+body.night .product-card{background:#333;color:#ddd;}
+body.night .buy-btn{background:#004d00;}
+body.night .buy-btn:hover{background:#002200;}
+</style>
+</head>
+<body>
+
+<header id="inicio">Tienda Nutrición Saludable 🌿</header>
+
+<nav>
+    <a href="#inicio">Inicio</a>
+    <a href="#productos">Productos</a>
+    <a href="#ofertas">Ofertas</a>
+    <a href="#sobre-nosotros">Sobre Nosotros</a>
+    <a href="#blog">Blog</a>
+    <a href="#contacto">Contacto</a>
+    <button id="toggle-night">🌙</button>
+</nav>
+
+<section id="productos">
+<h2>Productos Destacados</h2>
+<div class="products">
+<div class="product-card" data-name="Fruta Fresca" data-price="3.5" data-img="https://img.icons8.com/color/96/000000/apple.png">
+<img src="https://img.icons8.com/color/96/000000/apple.png" alt="Fruta Fresca" />
+<h3>Fruta Fresca</h3>
+<p>Deliciosas frutas frescas seleccionadas para ti.</p>
+<div class="price">$3.50 / unidad</div>
+<button class="buy-btn">Comprar</button>
+</div>
+<div class="product-card" data-name="Frutos Secos" data-price="8.0" data-img="https://img.icons8.com/color/96/000000/almond.png">
+<img src="https://img.icons8.com/color/96/000000/almond.png" alt="Frutos Secos" />
+<h3>Frutos Secos</h3>
+<p>Mezcla de nueces, almendras y semillas saludables.</p>
+<div class="price">$8.00 / 250g</div>
+<button class="buy-btn">Comprar</button>
+</div>
+<div class="product-card" data-name="Leche Vegetal" data-price="4.2" data-img="https://img.icons8.com/color/96/000000/milk-bottle.png">
+<img src="https://img.icons8.com/color/96/000000/milk-bottle.png" alt="Leche Vegetal" />
+<h3>Leche Vegetal</h3>
+<p>Alternativa saludable y nutritiva para tu día a día.</p>
+<div class="price">$4.20 / litro</div>
+<button class="buy-btn">Comprar</button>
+</div>
+<div class="product-card" data-name="Proteína en Polvo" data-price="25.0" data-img="https://img.icons8.com/color/96/000000/fitness.png">
+<img src="https://img.icons8.com/color/96/000000/fitness.png" alt="Proteína en Polvo" />
+<h3>Proteína en Polvo</h3>
+<p>Perfecta para deportistas y personas activas.</p>
+<div class="price">$25.00 / kg</div>
+<button class="buy-btn">Comprar</button>
+</div>
+</div>
+</section>
+
+<section id="ofertas">
+<h2>Ofertas Especiales</h2>
+<p style="text-align:center; max-width:800px; margin:auto;">¡Revisa nuestras ofertas semanales y ahorra en productos saludables!</p>
+</section>
+
+<section id="sobre-nosotros">
+<h2>Sobre Nosotros</h2>
+<p style="text-align:center; max-width:800px; margin:auto;">Somos una tienda dedicada a ofrecer productos nutritivos y naturales para mejorar tu bienestar y estilo de vida.</p>
+</section>
+
+<section id="blog">
+<h2>Blog Nutricional</h2>
+<p style="text-align:center; max-width:800px; margin:auto;">Consejos, recetas y noticias sobre nutrición saludable para toda la familia.</p>
+</section>
+
+<section id="contacto">
+<h2>Contacto</h2>
+<p style="text-align:center; max-width:800px; margin:auto;">
+Para pedidos o consultas, escríbenos a: <strong>ventas@nutricionsaludable.com</strong>
+</p>
+</section>
+
+<footer>&copy; 2025 Tienda Nutrición Saludable. Todos los derechos reservados.</footer>
+
+<!-- Carrito -->
+<div id="cart-icon" title="Ver carrito">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 18c-1.104 0-2 .897-2 2s.896 2 2 2c1.103 0 2-.897 2-2s-.897-2-2-2zm10 0c-1.104 0-2 .897-2 2s.896 2 2 2c1.103 0 2-.897 2-2s-.897-2-2-2zM7.205 15l1.452-3h7.691c.546 0 .978-.437.978-.977 0-.54-.432-.978-.978-.978H7.063l-.14-.479-1.78-6.088H1v2h3l3.6 7.59-1.35 2.44c-.204.37-.315.798-.315 1.24 0 1.378 1.122 2.5 2.5 2.5h10v-2H7.205z"/></svg>
+<span id="cart-count"></span>
+</div>
+
+<div id="cart-panel">
+<h3>Tu Carrito</h3>
+<div id="cart-items"></div>
+<div id="cart-total"></div>
+<button id="empty-cart-btn">Vaciar carrito</button>
+</div>
+
+<script>
+// --- JS carrito ---
+const cart=[];
+const cartIcon=document.getElementById('cart-icon');
+const cartPanel=document.getElementById('cart-panel');
+const cartItemsDiv=document.getElementById('cart-items');
+const cartTotalDiv=document.getElementById('cart-total');
+const cartCount=document.getElementById('cart-count');
+const emptyCartBtn=document.getElementById('empty-cart-btn');
+
+cartIcon.addEventListener('click',()=>cartPanel.classList.toggle('show'));
+
+function updateCartCount(){
+    const totalQuantity=cart.reduce((a,b)=>a+b.quantity,0);
+    if(totalQuantity>0){cartCount.style.display='inline-block';cartCount.style.transform='scale(1.3)';setTimeout(()=>cartCount.style.transform='scale(1)',200);cartCount.textContent=totalQuantity;}
+    else{cartCount.style.display='none';}
+}
+
+function renderCart(){
+    cartItemsDiv.innerHTML='';
+    if(cart.length===0){cartItemsDiv.innerHTML='<p id="empty-cart-msg">Tu carrito está vacío.</p>';cartTotalDiv.textContent='';emptyCartBtn.style.display='none';updateCartCount();return;}
+    emptyCartBtn.style.display='block';
+    cart.forEach((item,index)=>{
+        const div=document.createElement('div');div.className='cart-item';
+        div.innerHTML=`<img src="${item.img}" alt="${item.name}"><div class="cart-item-info"><span class="cart-item-name">${item.name}</span><span>Cantidad: ${item.quantity}</span><span>Precio: $${(item.price*item.quantity).toFixed(2)}</span></div><div class="cart-item-controls"><button onclick="decreaseQuantity(${index})">-</button><button onclick="removeFromCart(${index})">X</button></div>`;
+        cartItemsDiv.appendChild(div);
+    });
+    const total=cart.reduce((a,b)=>a+b.price*b.quantity,0);
+    cartTotalDiv.textContent=`Total: $${total.toFixed(2)}`;
+    updateCartCount();
+}
+
+function removeFromCart(index){cart.splice(index,1);renderCart();}
+function decreaseQuantity(index){if(cart[index].quantity>1){cart[index].quantity--;}else{removeFromCart(index);}renderCart();}
+
+document.querySelectorAll('.buy-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        const product=btn.closest('.product-card');
+        const name=product.dataset.name;
+        const price=parseFloat(product.dataset.price);
+        const img=product.dataset.img||'';
+        const existing=cart.find(item=>item.name===name);
+        if(existing){existing.quantity++;}else{cart.push({name,price,quantity:1,img});}
+        renderCart();
+        btn.classList.add('added');setTimeout(()=>btn.classList.remove('added'),1200);
+
+        // Animación “vuelo” al carrito
+        const imgClone=product.querySelector('img').cloneNode(true);
+        imgClone.style.position='absolute';
+        const rect=product.querySelector('img').getBoundingClientRect();
+        imgClone.style.left=rect.left+'px';
+        imgClone.style.top=rect.top+'px';
+        imgClone.style.width=rect.width+'px';
+        imgClone.style.transition='all 0.8s ease-in-out';
+        document.body.appendChild(imgClone);
+        const cartRect=cartIcon.getBoundingClientRect();
+        setTimeout(()=>{imgClone.style.left=cartRect.left+'px';imgClone.style.top=cartRect.top+'px';imgClone.style.width='30px';imgClone.style.opacity='0';},50);
+        setTimeout(()=>document.body.removeChild(imgClone),850);
+    });
+});
+
+emptyCartBtn.addEventListener('click',()=>{cart.length=0;renderCart();});
+
+renderCart();
+
+// Modo noche
+document.getElementById('toggle-night').addEventListener('click',()=>{document.body.classList.toggle('night');});
+</script>
+</body>
+</html>
